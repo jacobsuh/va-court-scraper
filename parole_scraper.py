@@ -12,9 +12,11 @@ def set_date(dates):
     datebox.send_keys(dates)
     browser.find_element_by_name("hearDate").click()
 
-dates_generated = ["06/08/2016", "02/28/2018", "05/26/2014", "05/27/2014"]
+dates_generated = ["02/28/2018", "05/26/2014", "05/27/2014", "06/08/2016"]
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
+#
+
 
 URL = "http://ewsocis1.courts.state.va.us/CJISWeb/circuit.jsp"
 # headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -36,29 +38,38 @@ browser.find_element_by_id("courtSubmit").click()
 for date in dates_generated:
     set_date(date)
 
-    # SCRAPING INDIVIDUAL CASES
-    source = browser.page_source
-    soup = BeautifulSoup(source, 'html.parser')
+    # Loop through all pages until we find a duplicate entry (no more pages)
+    num_duplicates = 0
+    case_list = []
+    while num_duplicates == 0:
+        print(num_duplicates)
+        print(case_list)
+        # SCRAPING INDIVIDUAL CASES
+        source = browser.page_source
+        soup = BeautifulSoup(source, 'html.parser')
 
-    case_table = soup.findAll('table')[3]
+        case_table = soup.findAll('table')[3]
 
-    loops_needed = len(case_table.find_all('tr'))
+        # Keep track of the cases per day seen so far to keep track of duplicates
 
 
+        loops_needed = len(case_table.find_all('tr'))
+        if loops_needed == 1:
+            num_duplicates = 1
+            break
+        # Loop through everything in the table
+        for i in range(loops_needed-1):
+            browser.find_element_by_xpath('(//*[@id="tdbold"])[' + str(i+1) + ']/a').click()
 
-    for i in range(loops_needed-1):
-        browser.find_element_by_xpath('(//*[@id="tdbold"])[' + str(i+1) + ']/a').click()
+            case_source = browser.page_source
+            case_soup = BeautifulSoup(case_source, 'html.parser')
 
-        case_source = browser.page_source
-        case_soup = BeautifulSoup(case_source, 'html.parser')
+            # Checking if Guilty and has Probation Time
+            final_disposition_table = case_soup.findAll('table')[8]
+            disposition_code = final_disposition_table.findAll('td')[0].text
+            results_table = case_soup.findAll('table')[9]
+            probation_time = results_table.findAll('td')[11].text
 
-        # Checking if Guilty and has Probation Time
-        final_disposition_table = case_soup.findAll('table')[8]
-        disposition_code = final_disposition_table.findAll('td')[0].text
-        results_table = case_soup.findAll('table')[9]
-        probation_time = results_table.findAll('td')[11].text
-
-        if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(probation_time.split()) > 2:
 
             # Demographics
             main_table = case_soup.findAll('table')[4]
@@ -66,74 +77,85 @@ for date in dates_generated:
             case_number = main_table.findAll('td')[0].text
             case_number = case_number.split()[2]
 
+            if case_number in case_list:
+                num_duplicates = 1
+                browser.find_element_by_id("hearList").click()
+                break
+            else:
+                case_list.append(case_number)
 
-            name = main_table.findAll('td')[4].text
-            name = name.split()[1:]
-            name = " ".join(name)
+            if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
+                    probation_time.split()) > 2:
 
-            sex = main_table.findAll('td')[5].text
-            sex = sex.split()[1]
+                name = main_table.findAll('td')[4].text
+                name = name.split()[1:]
+                name = " ".join(name)
 
-            race = main_table.findAll('td')[6].text
-            race = race.split()[1:]
-            race = " ".join(race)
+                sex = main_table.findAll('td')[5].text
+                sex = sex.split()[1]
 
-            # Checking if case has AKA
-            aka_shift = 0
-            if "AKA:" in main_table.findAll('td')[8].text:
-                aka_shift = 1
+                race = main_table.findAll('td')[6].text
+                race = race.split()[1:]
+                race = " ".join(race)
 
-            charge = main_table.findAll('td')[9+aka_shift].text
-            charge = charge.split()[1:]
-            charge = " ".join(charge)
+                # Checking if case has AKA
+                aka_shift = 0
+                if "AKA:" in main_table.findAll('td')[8].text:
+                    aka_shift = 1
 
-            code_section = main_table.findAll('td')[10+aka_shift].text
-            print(code_section.split())
-            code_section = code_section.split()[2]
+                charge = main_table.findAll('td')[9+aka_shift].text
+                charge = charge.split()[1:]
+                charge = " ".join(charge)
 
-            charge_type = main_table.findAll('td')[11+aka_shift].text
-            charge_type = charge_type.split()[2]
+                code_section = main_table.findAll('td')[10+aka_shift].text
+                print(code_section.split())
+                code_section = code_section.split()[2]
 
-            # Final Disposition
-            final_disposition_table = case_soup.findAll('table')[8]
+                charge_type = main_table.findAll('td')[11+aka_shift].text
+                charge_type = charge_type.split()[2]
 
-            disposition_code = final_disposition_table.findAll('td')[0].text
-            disposition_code = disposition_code.split()[2]
+                # Final Disposition
+                final_disposition_table = case_soup.findAll('table')[8]
 
-            disposition_date = final_disposition_table.findAll('td')[1].text
-            disposition_date = disposition_date.split()[2]
+                disposition_code = final_disposition_table.findAll('td')[0].text
+                disposition_code = disposition_code.split()[2]
 
-            # Results
-            results_table = case_soup.findAll('table')[9]
+                disposition_date = final_disposition_table.findAll('td')[1].text
+                disposition_date = disposition_date.split()[2]
 
-            sentence_time = results_table.findAll('td')[3].text
-            sentence_time = sentence_time.split()[2:]
-            sentence_time = " ".join(sentence_time)
+                # Results
+                results_table = case_soup.findAll('table')[9]
 
-            probation_time = results_table.findAll('td')[11].text
-            probation_time = probation_time.split()[2:]
-            probation_time = " ".join(probation_time)
+                sentence_time = results_table.findAll('td')[3].text
+                sentence_time = sentence_time.split()[2:]
+                sentence_time = " ".join(sentence_time)
+
+                probation_time = results_table.findAll('td')[11].text
+                probation_time = probation_time.split()[2:]
+                probation_time = " ".join(probation_time)
+
+                print(case_number)
+                print(name)
+                print(sex)
+                print(race)
+                print(charge)
+                print(code_section)
+                print(charge_type)
+
+                print(disposition_code)
+                print(disposition_date)
+
+                print(sentence_time)
+                print(probation_time)
+
+                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, disposition_code, disposition_date, sentence_time, probation_time]
+                data = ",".join(csv_row)
+                csv_file.write(data + "\n")
 
 
-            print(case_number)
-            print(name)
-            print(sex)
-            print(race)
-            print(charge)
-            print(code_section)
-            print(charge_type)
+            browser.find_element_by_id("hearList").click()
 
-            print(disposition_code)
-            print(disposition_date)
-
-            print(sentence_time)
-            print(probation_time)
-
-            csv_row = [case_number, name, sex, race, charge, code_section, charge_type, disposition_code, disposition_date, sentence_time, probation_time]
-            data = ",".join(csv_row)
-            csv_file.write(data + "\n")
-
-        browser.find_element_by_id("hearList").click()
+        browser.find_element_by_xpath("//input[@value='Scroll Forward']").click()
 
     browser.find_element_by_xpath("//input[@value='Main Menu']").click()
 
