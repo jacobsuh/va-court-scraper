@@ -12,7 +12,9 @@ def set_date(dates):
     datebox.send_keys(dates)
     browser.find_element_by_name("hearDate").click()
 
-dates_generated = ["06/08/2016"]
+dates_generated = ["06/08/2016", "02/28/2018", "05/26/2014", "05/27/2014"]
+# Date with 4 known cases: "06/08/2016"
+# "02/28/2018", "05/26/2014", "05/27/2014"
 
 URL = "http://ewsocis1.courts.state.va.us/CJISWeb/circuit.jsp"
 # headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -56,13 +58,14 @@ for date in dates_generated:
         results_table = case_soup.findAll('table')[9]
         probation_time = results_table.findAll('td')[11].text
 
-        if disposition_code.split()[2] == "Guilty" and len(probation_time.split()) > 2:
+        if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(probation_time.split()) > 2:
 
             # Demographics
             main_table = case_soup.findAll('table')[4]
 
             case_number = main_table.findAll('td')[0].text
             case_number = case_number.split()[2]
+
 
             name = main_table.findAll('td')[4].text
             name = name.split()[1:]
@@ -75,14 +78,20 @@ for date in dates_generated:
             race = race.split()[1:]
             race = " ".join(race)
 
-            charge = main_table.findAll('td')[9].text
+            # Checking if case has AKA
+            aka_shift = 0
+            if "AKA:" in main_table.findAll('td')[8].text:
+                aka_shift = 1
+
+            charge = main_table.findAll('td')[9+aka_shift].text
             charge = charge.split()[1:]
             charge = " ".join(charge)
 
-            code_section = main_table.findAll('td')[10].text
+            code_section = main_table.findAll('td')[10+aka_shift].text
+            print(code_section.split())
             code_section = code_section.split()[2]
 
-            charge_type = main_table.findAll('td')[11].text
+            charge_type = main_table.findAll('td')[11+aka_shift].text
             charge_type = charge_type.split()[2]
 
             # Final Disposition
