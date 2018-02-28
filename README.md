@@ -1,7 +1,7 @@
 # va-court-scraper
 Scrapes the VA circuit court database.
 
-Created for a UVa student's Global Security and Justice thesis paper. Automatically scrapes (Virginia's circuit court databases)[http://ewsocis1.courts.state.va.us/CJISWeb/circuit.jsp] with supplied dates and pulls relevant data. 
+Created for a UVa student's Global Security and Justice thesis paper. Automatically scrapes [Virginia's circuit court databases](http://ewsocis1.courts.state.va.us/CJISWeb/circuit.jsp) with supplied dates and pulls relevant data. 
 
 Utilizes Selenium and BeautifulSoup.
 
