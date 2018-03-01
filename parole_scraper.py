@@ -83,12 +83,16 @@ for date in dates_generated:
             disposition_code = final_disposition_table.findAll('td')[0].text
             results_table = case_soup.findAll('table')[9]
             probation_time = results_table.findAll('td')[11].text
+
+            aka_shift = 0
+            if "AKA:" in main_table.findAll('td')[8].text:
+                aka_shift = 1
             charge = main_table.findAll('td')[9 + aka_shift].text
             charge = charge.split()[1:]
             charge = " ".join(charge)
 
             if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
-                    probation_time.split()) > 2: and charge_type != "PROBATION VIOLATION"
+                    probation_time.split()) > 2 and charge != "PROBATION VIOLATION":
 
                 name = main_table.findAll('td')[4].text
                 name = name.split()[1:]
@@ -124,6 +128,8 @@ for date in dates_generated:
 
                 disposition_date = final_disposition_table.findAll('td')[1].text
                 disposition_date = disposition_date.split()[2]
+
+# ########### NEED TO MAKE SURE THESE EXIST...
 
                 amended_charge = final_disposition_table.findAll('td')[3].text
                 amended_charge = amended_charge.split()[2:]
