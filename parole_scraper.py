@@ -78,14 +78,17 @@ for date in dates_generated:
             else:
                 case_list.append(case_number)
 
-            # Needed to if Guilty and has Probation Time
+            # Needed to check if Guilty, has Probation Time, and not Probation Violation
             final_disposition_table = case_soup.findAll('table')[8]
             disposition_code = final_disposition_table.findAll('td')[0].text
             results_table = case_soup.findAll('table')[9]
             probation_time = results_table.findAll('td')[11].text
+            charge = main_table.findAll('td')[9 + aka_shift].text
+            charge = charge.split()[1:]
+            charge = " ".join(charge)
 
             if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
-                    probation_time.split()) > 2:
+                    probation_time.split()) > 2: and charge_type != "PROBATION VIOLATION"
 
                 name = main_table.findAll('td')[4].text
                 name = name.split()[1:]
@@ -147,7 +150,6 @@ for date in dates_generated:
                 probation_time = results_table.findAll('td')[11].text
                 probation_time = probation_time.split()[2:]
                 probation_time = " ".join(probation_time)
-
 
 
                 print(case_number)
