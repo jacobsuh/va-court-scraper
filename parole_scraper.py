@@ -12,10 +12,10 @@ def set_date(dates):
     datebox.send_keys(dates)
     browser.find_element_by_name("hearDate").click()
 
-dates_generated = ['05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014"]
+dates_generated = ["06/08/2016", "02/28/2018", "05/26/2014", "05/27/2014"]
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
-#
+# 05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014
 
 
 URL = "http://ewsocis1.courts.state.va.us/CJISWeb/circuit.jsp"
@@ -132,14 +132,19 @@ for date in dates_generated:
 # ########### NEED TO MAKE SURE THESE EXIST...
 
                 amended_charge = final_disposition_table.findAll('td')[3].text
-                amended_charge = amended_charge.split()[2:]
-                amended_charge = " ".join(amended_charge)
+                if len(amended_charge.split()) > 2:
+                    amended_charge = amended_charge.split()[2:]
+                    amended_charge = " ".join(amended_charge)
 
-                amended_code_section = final_disposition_table.findAll('td')[4].text
-                amended_code_section = amended_code_section.split()[3]
+                    amended_code_section = final_disposition_table.findAll('td')[4].text
+                    amended_code_section = amended_code_section.split()[3]
 
-                amended_charge_type = final_disposition_table.findAll('td')[5].text
-                amended_charge_type = amended_charge_type.split()[3]
+                    amended_charge_type = final_disposition_table.findAll('td')[5].text
+                    amended_charge_type = amended_charge_type.split()[3]
+                else:
+                    amended_charge = ""
+                    amended_code_section = ""
+                    amended_charge_type = ""
 
 
                 # Results
