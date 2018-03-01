@@ -12,7 +12,7 @@ def set_date(dates):
     datebox.send_keys(dates)
     browser.find_element_by_name("hearDate").click()
 
-dates_generated = ["02/28/2018", "05/26/2014", "05/27/2014", "06/08/2016"]
+dates_generated = ['05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014"]
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
 #
@@ -26,7 +26,7 @@ browser = webdriver.Chrome()
 browser.get(URL)
 
 csv_file = open("court.csv", "w")
-headers = "Case Number, Last Name, First Name, Sex, Race, Charge, Code Section, Charge Type, Disposition Code, Disposition Date, Sentence Time, Probation Time"
+headers = "Case Number, Last Name, First Name, Sex, Race, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Probation Time"
 csv_file.write(headers + "\n")
 
 # Picking Albemarle Country Court
@@ -44,6 +44,7 @@ for date in dates_generated:
     while num_duplicates == 0:
         print(num_duplicates)
         print(case_list)
+
         # SCRAPING INDIVIDUAL CASES
         source = browser.page_source
         soup = BeautifulSoup(source, 'html.parser')
@@ -64,13 +65,6 @@ for date in dates_generated:
             case_source = browser.page_source
             case_soup = BeautifulSoup(case_source, 'html.parser')
 
-            # Checking if Guilty and has Probation Time
-            final_disposition_table = case_soup.findAll('table')[8]
-            disposition_code = final_disposition_table.findAll('td')[0].text
-            results_table = case_soup.findAll('table')[9]
-            probation_time = results_table.findAll('td')[11].text
-
-
             # Demographics
             main_table = case_soup.findAll('table')[4]
 
@@ -83,6 +77,12 @@ for date in dates_generated:
                 break
             else:
                 case_list.append(case_number)
+
+            # Needed to if Guilty and has Probation Time
+            final_disposition_table = case_soup.findAll('table')[8]
+            disposition_code = final_disposition_table.findAll('td')[0].text
+            results_table = case_soup.findAll('table')[9]
+            probation_time = results_table.findAll('td')[11].text
 
             if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
                     probation_time.split()) > 2:
@@ -108,7 +108,6 @@ for date in dates_generated:
                 charge = " ".join(charge)
 
                 code_section = main_table.findAll('td')[10+aka_shift].text
-                print(code_section.split())
                 code_section = code_section.split()[2]
 
                 charge_type = main_table.findAll('td')[11+aka_shift].text
@@ -122,6 +121,17 @@ for date in dates_generated:
 
                 disposition_date = final_disposition_table.findAll('td')[1].text
                 disposition_date = disposition_date.split()[2]
+
+                amended_charge = final_disposition_table.findAll('td')[3].text
+                amended_charge = amended_charge.split()[2:]
+                amended_charge = " ".join(amended_charge)
+
+                amended_code_section = final_disposition_table.findAll('td')[4].text
+                amended_code_section = amended_code_section.split()[3]
+
+                amended_charge_type = final_disposition_table.findAll('td')[5].text
+                amended_charge_type = amended_charge_type.split()[3]
+
 
                 # Results
                 results_table = case_soup.findAll('table')[9]
@@ -148,7 +158,7 @@ for date in dates_generated:
                 print(sentence_time)
                 print(probation_time)
 
-                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, disposition_code, disposition_date, sentence_time, probation_time]
+                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, probation_time]
                 data = ",".join(csv_row)
                 csv_file.write(data + "\n")
 
@@ -159,4 +169,5 @@ for date in dates_generated:
 
     browser.find_element_by_xpath("//input[@value='Main Menu']").click()
 
+print("Scraping done for dates" + str(dates_generated))
 csv_file.close()
