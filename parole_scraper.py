@@ -26,7 +26,7 @@ browser = webdriver.Chrome()
 browser.get(URL)
 
 csv_file = open("court.csv", "w")
-headers = "Case Number, Last Name, First Name, Sex, Race, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Probation Time"
+headers = "Case Number, Last Name, First Name, Sex, Race, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
 csv_file.write(headers + "\n")
 
 # Picking Albemarle Country Court
@@ -140,9 +140,15 @@ for date in dates_generated:
                 sentence_time = sentence_time.split()[2:]
                 sentence_time = " ".join(sentence_time)
 
+                sentence_suspended = results_table.findAll('td')[4].text
+                sentence_suspended = sentence_suspended.split()[2:]
+                sentence_suspended = " ".join(sentence_suspended)
+
                 probation_time = results_table.findAll('td')[11].text
                 probation_time = probation_time.split()[2:]
                 probation_time = " ".join(probation_time)
+
+
 
                 print(case_number)
                 print(name)
@@ -158,7 +164,7 @@ for date in dates_generated:
                 print(sentence_time)
                 print(probation_time)
 
-                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, probation_time]
+                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, sentence_suspended, probation_time]
                 data = ",".join(csv_row)
                 csv_file.write(data + "\n")
 
