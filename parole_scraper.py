@@ -12,7 +12,13 @@ def set_date(dates):
     datebox.send_keys(dates)
     browser.find_element_by_name("hearDate").click()
 
-dates_generated = ["06/08/2016", "02/28/2018", "05/26/2014", "05/27/2014"]
+# Picking proper court
+def set_court(name):
+    dropdown = Select(browser.find_element_by_name("whichsystem"))
+    dropdown.select_by_visible_text(name)
+    browser.find_element_by_id("courtSubmit").click()
+
+dates_generated = ['06/16/2014', '12/28/2014', '02/14/2013', '08/11/2015', '07/12/2014', '07/12/2013', '03/28/2017', '08/01/2015', '04/08/2015', '03/16/2016']
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
 # 05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014
@@ -26,13 +32,11 @@ browser = webdriver.Chrome()
 browser.get(URL)
 
 csv_file = open("court.csv", "w")
-headers = "Case Number, Last Name, First Name, Sex, Race, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
+headers = "Case Number, Last Name, First Name, Sex, Race, Date, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
 csv_file.write(headers + "\n")
 
-# Picking Albemarle Country Court
-dropdown = Select(browser.find_element_by_name("whichsystem"))
-dropdown.select_by_index(1)
-browser.find_element_by_id("courtSubmit").click()
+
+set_court("Albemarle Circuit Court")
 
 
 for date in dates_generated:
@@ -129,7 +133,7 @@ for date in dates_generated:
                 disposition_date = final_disposition_table.findAll('td')[1].text
                 disposition_date = disposition_date.split()[2]
 
-# ########### NEED TO MAKE SURE THESE EXIST...
+                # Makes sure amended charges exist before adding
 
                 amended_charge = final_disposition_table.findAll('td')[3].text
                 if len(amended_charge.split()) > 2:
@@ -177,7 +181,7 @@ for date in dates_generated:
                 print(sentence_time)
                 print(probation_time)
 
-                csv_row = [case_number, name, sex, race, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, sentence_suspended, probation_time]
+                csv_row = [case_number, name, sex, race, date, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, sentence_suspended, probation_time]
                 data = ",".join(csv_row)
                 csv_file.write(data + "\n")
 
