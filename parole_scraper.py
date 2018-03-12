@@ -18,7 +18,95 @@ def set_court(name):
     dropdown.select_by_visible_text(name)
     browser.find_element_by_id("courtSubmit").click()
 
-dates_generated = ['06/16/2014', '12/28/2014', '02/14/2013', '08/11/2015', '07/12/2014', '07/12/2013', '03/28/2017', '08/01/2015', '04/08/2015', '03/16/2016']
+def scrape_info():
+    name = main_table.findAll('td')[4].text
+    name = name.split()[1:]
+    name = " ".join(name)
+
+    sex = main_table.findAll('td')[5].text
+    sex = sex.split()[1]
+
+    race = main_table.findAll('td')[6].text
+    race = race.split()[1:]
+    race = " ".join(race)
+
+    # Checking if case has AKA
+    aka_shift = 0
+    if "AKA:" in main_table.findAll('td')[8].text:
+        aka_shift = 1
+
+    charge = main_table.findAll('td')[9 + aka_shift].text
+    charge = charge.split()[1:]
+    charge = " ".join(charge)
+
+    code_section = main_table.findAll('td')[10 + aka_shift].text
+    code_section = code_section.split()[2]
+
+    charge_type = main_table.findAll('td')[11 + aka_shift].text
+    charge_type = charge_type.split()[2]
+
+    # Final Disposition
+    final_disposition_table = case_soup.findAll('table')[8]
+
+    disposition_code = final_disposition_table.findAll('td')[0].text
+    disposition_code = disposition_code.split()[2]
+
+    disposition_date = final_disposition_table.findAll('td')[1].text
+    disposition_date = disposition_date.split()[2]
+
+    # Makes sure amended charges exist before adding
+
+    amended_charge = final_disposition_table.findAll('td')[3].text
+    if len(amended_charge.split()) > 2:
+        amended_charge = amended_charge.split()[2:]
+        amended_charge = " ".join(amended_charge)
+
+        amended_code_section = final_disposition_table.findAll('td')[4].text
+        amended_code_section = amended_code_section.split()[3]
+
+        amended_charge_type = final_disposition_table.findAll('td')[5].text
+        amended_charge_type = amended_charge_type.split()[3]
+    else:
+        amended_charge = ""
+        amended_code_section = ""
+        amended_charge_type = ""
+
+    # Results
+    results_table = case_soup.findAll('table')[9]
+
+    sentence_time = results_table.findAll('td')[3].text
+    sentence_time = sentence_time.split()[2:]
+    sentence_time = " ".join(sentence_time)
+
+    sentence_suspended = results_table.findAll('td')[4].text
+    sentence_suspended = sentence_suspended.split()[2:]
+    sentence_suspended = " ".join(sentence_suspended)
+
+    probation_time = results_table.findAll('td')[11].text
+    probation_time = probation_time.split()[2:]
+    probation_time = " ".join(probation_time)
+
+    print(case_number)
+    print(name)
+    print(sex)
+    print(race)
+    print(charge)
+    print(code_section)
+    print(charge_type)
+
+    print(disposition_code)
+    print(disposition_date)
+
+    print(sentence_time)
+    print(probation_time)
+
+    csv_row = [case_number, name, sex, race, date, charge, code_section, charge_type, amended_charge,
+               amended_code_section, amended_charge_type, disposition_code, disposition_date, sentence_time,
+               sentence_suspended, probation_time]
+    data = ",".join(csv_row)
+    csv_file.write(data + "\n")
+
+dates_generated = ['02/20/2013', '04/19/2015', '12/31/2016', '01/12/2012', '03/08/2015', '07/13/2015', '07/24/2013', '10/15/2013', '12/28/2014', '07/16/2015']
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
 # 05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014
@@ -69,9 +157,10 @@ for date in dates_generated:
             case_source = browser.page_source
             case_soup = BeautifulSoup(case_source, 'html.parser')
 
-            # Demographics
+            # Demographics Table
             main_table = case_soup.findAll('table')[4]
 
+            # Checking to make sure case isn't repeated
             case_number = main_table.findAll('td')[0].text
             case_number = case_number.split()[2]
 
@@ -98,92 +187,7 @@ for date in dates_generated:
             if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
                     probation_time.split()) > 2 and charge != "PROBATION VIOLATION":
 
-                name = main_table.findAll('td')[4].text
-                name = name.split()[1:]
-                name = " ".join(name)
-
-                sex = main_table.findAll('td')[5].text
-                sex = sex.split()[1]
-
-                race = main_table.findAll('td')[6].text
-                race = race.split()[1:]
-                race = " ".join(race)
-
-                # Checking if case has AKA
-                aka_shift = 0
-                if "AKA:" in main_table.findAll('td')[8].text:
-                    aka_shift = 1
-
-                charge = main_table.findAll('td')[9+aka_shift].text
-                charge = charge.split()[1:]
-                charge = " ".join(charge)
-
-                code_section = main_table.findAll('td')[10+aka_shift].text
-                code_section = code_section.split()[2]
-
-                charge_type = main_table.findAll('td')[11+aka_shift].text
-                charge_type = charge_type.split()[2]
-
-                # Final Disposition
-                final_disposition_table = case_soup.findAll('table')[8]
-
-                disposition_code = final_disposition_table.findAll('td')[0].text
-                disposition_code = disposition_code.split()[2]
-
-                disposition_date = final_disposition_table.findAll('td')[1].text
-                disposition_date = disposition_date.split()[2]
-
-                # Makes sure amended charges exist before adding
-
-                amended_charge = final_disposition_table.findAll('td')[3].text
-                if len(amended_charge.split()) > 2:
-                    amended_charge = amended_charge.split()[2:]
-                    amended_charge = " ".join(amended_charge)
-
-                    amended_code_section = final_disposition_table.findAll('td')[4].text
-                    amended_code_section = amended_code_section.split()[3]
-
-                    amended_charge_type = final_disposition_table.findAll('td')[5].text
-                    amended_charge_type = amended_charge_type.split()[3]
-                else:
-                    amended_charge = ""
-                    amended_code_section = ""
-                    amended_charge_type = ""
-
-
-                # Results
-                results_table = case_soup.findAll('table')[9]
-
-                sentence_time = results_table.findAll('td')[3].text
-                sentence_time = sentence_time.split()[2:]
-                sentence_time = " ".join(sentence_time)
-
-                sentence_suspended = results_table.findAll('td')[4].text
-                sentence_suspended = sentence_suspended.split()[2:]
-                sentence_suspended = " ".join(sentence_suspended)
-
-                probation_time = results_table.findAll('td')[11].text
-                probation_time = probation_time.split()[2:]
-                probation_time = " ".join(probation_time)
-
-
-                print(case_number)
-                print(name)
-                print(sex)
-                print(race)
-                print(charge)
-                print(code_section)
-                print(charge_type)
-
-                print(disposition_code)
-                print(disposition_date)
-
-                print(sentence_time)
-                print(probation_time)
-
-                csv_row = [case_number, name, sex, race, date, charge, code_section, charge_type, amended_charge, amended_code_section, amended_charge_type, disposition_code, disposition_date,  sentence_time, sentence_suspended, probation_time]
-                data = ",".join(csv_row)
-                csv_file.write(data + "\n")
+                scrape_info()
 
 
             browser.find_element_by_id("hearList").click()
