@@ -106,7 +106,7 @@ def scrape_info():
     data = ",".join(csv_row)
     csv_file.write(data + "\n")
 
-dates_generated = ['02/20/2013', '04/19/2015', '12/31/2016', '01/12/2012', '03/08/2015', '07/13/2015', '07/24/2013', '10/15/2013', '12/28/2014', '07/16/2015']
+dates_generated = ['03/27/2014']
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
 # 05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014
@@ -123,11 +123,10 @@ csv_file = open("court.csv", "w")
 headers = "Case Number, Last Name, First Name, Sex, Race, Date, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
 csv_file.write(headers + "\n")
 
-
-set_court("Albemarle Circuit Court")
-
+set_court("Charlottesville Circuit Court")
 
 for date in dates_generated:
+
     set_date(date)
 
     # Loop through all pages until we find a duplicate entry (no more pages)
@@ -137,22 +136,25 @@ for date in dates_generated:
         print(num_duplicates)
         print(case_list)
 
-        # SCRAPING INDIVIDUAL CASES
         source = browser.page_source
         soup = BeautifulSoup(source, 'html.parser')
 
         case_table = soup.findAll('table')[3]
 
         # Keep track of the cases per day seen so far to keep track of duplicates
-
-
         loops_needed = len(case_table.find_all('tr'))
         if loops_needed == 1:
             num_duplicates = 1
             break
         # Loop through everything in the table
         for i in range(loops_needed-1):
-            browser.find_element_by_xpath('(//*[@id="tdbold"])[' + str(i+1) + ']/a').click()
+
+            # Check if Case ID element exists
+            case_id_cell = browser.find_element_by_xpath('(//*[@id="tdbold"])[' + str(i+1) + ']/a')
+            if len(case_id_cell.text) > 0:
+                case_id_cell.click()
+            else:
+                continue
 
             case_source = browser.page_source
             case_soup = BeautifulSoup(case_source, 'html.parser')
@@ -160,7 +162,7 @@ for date in dates_generated:
             # Demographics Table
             main_table = case_soup.findAll('table')[4]
 
-            # Checking to make sure case isn't repeated
+            # Checking to make sure case number isn't repeated
             case_number = main_table.findAll('td')[0].text
             case_number = case_number.split()[2]
 
@@ -171,7 +173,7 @@ for date in dates_generated:
             else:
                 case_list.append(case_number)
 
-            # Needed to check if Guilty, has Probation Time, and not Probation Violation
+            # Check if Guilty, has Probation Time, and not Probation Violation
             final_disposition_table = case_soup.findAll('table')[8]
             disposition_code = final_disposition_table.findAll('td')[0].text
             results_table = case_soup.findAll('table')[9]
