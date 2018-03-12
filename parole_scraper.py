@@ -106,7 +106,7 @@ def scrape_info():
     data = ",".join(csv_row)
     csv_file.write(data + "\n")
 
-dates_generated = ['03/27/2014']
+dates_generated = ['09/18/2013', '12/16/2014', '12/13/2015', '01/03/2015', '06/24/2013', '02/15/2016', '03/15/2015', '02/22/2012', '11/04/2013', '10/20/2012', '04/18/2016', '12/30/2012', '09/20/2013', '09/22/2015', '12/31/2013', '04/29/2012', '03/23/2014', '01/04/2015', '08/06/2015', '01/07/2016', '01/19/2014', '09/27/2013', '08/14/2015', '06/16/2012', '02/10/2016', '09/19/2012', '09/09/2016', '04/26/2016', '05/03/2013', '11/23/2015', '01/04/2012', '01/11/2013', '09/08/2014', '03/18/2016', '11/07/2012', '02/01/2012', '06/06/2015', '07/24/2015', '08/29/2015', '06/22/2014', '11/02/2015', '02/04/2013', '10/19/2016', '09/30/2014', '10/27/2012', '01/24/2012', '07/19/2014', '09/25/2015', '08/16/2013', '11/23/2012']
 # Date with 4 known cases: "06/08/2016"
 # "02/28/2018", "05/26/2014", "05/27/2014"
 # 05/02/2014', '04/21/2014', '07/01/2011', '12/31/2014', '10/26/2014', "02/28/2018", "05/26/2014", "05/27/2014
@@ -123,7 +123,7 @@ csv_file = open("court.csv", "w")
 headers = "Case Number, Last Name, First Name, Sex, Race, Date, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
 csv_file.write(headers + "\n")
 
-set_court("Charlottesville Circuit Court")
+set_court("Goochland Circuit Court")
 
 for date in dates_generated:
 

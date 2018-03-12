@@ -3,7 +3,5 @@ Automatically scrapes [Virginia's circuit court case databases](http://ewsocis1.
 
 Utilizes Selenium and BeautifulSoup. Main challenge was that the database utilizes javascript almost entirely, so regular GET/POST requests couldn't be used. Selenium was used to physically click on elements and enter in keys as needed. The HTML source was then passed to BeautifulSoup to scrape the necessary data points for the paper.
 
-## TODO
-- Ability to easily change which circuit court is selected. Selected through index position currently.
-- Move some repetitive functions into their own functions
+## To-do
 - Just clean it up...
