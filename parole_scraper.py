@@ -19,6 +19,8 @@ def set_court(name):
     browser.find_element_by_id("courtSubmit").click()
 
 def scrape_info():
+    ### Lots of variables need to be called outside of this function... Too lazy to fix.
+
     name = main_table.findAll('td')[4].text
     name = name.split()[1:]
     name = " ".join(name)
