@@ -13,7 +13,7 @@ def set_date(dates):
     browser.find_element_by_name("hearDate").click()
 
 # Picking proper court
-def set_court(name):
+def set_court_by_name(name):
     dropdown = Select(browser.find_element_by_name("whichsystem"))
     dropdown.select_by_visible_text(name)
     browser.find_element_by_id("courtSubmit").click()
@@ -125,7 +125,7 @@ csv_file = open("court.csv", "w")
 headers = "Case Number, Last Name, First Name, Sex, Race, Date, Charge, Code Section, Charge Type, Amended Charge, Amended Code Section, Amended Charge Type, Disposition Code, Disposition Date, Sentence Time, Sentence Suspended, Probation Time"
 csv_file.write(headers + "\n")
 
-set_court("Goochland Circuit Court")
+set_court_by_name("Goochland Circuit Court")
 
 for date in dates_generated:
 
