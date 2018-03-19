@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
-import requests
 
 # Typing date and "Search by Hearing Date"
 def set_date(dates):
