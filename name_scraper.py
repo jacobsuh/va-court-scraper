@@ -132,6 +132,7 @@ for court in range(len(courts_list)):
 
     browser.find_element_by_xpath("//input[@value='Change Court']").click()
 
+browser.quit()
 csv_file.close()
 
 print("SAVING OUTPUT...")
