@@ -43,10 +43,11 @@ courts_list = browser.find_elements_by_css_selector("option")
 
 match_dict = {}
 
-for court in range(len(courts_list)+1):
+for court in range(len(courts_list)):
     court_name = soup.findAll("option")[court].text.strip()
 
     set_court_by_index(court)
+    print("Court set: " + court_name)
 
     csv_file = open(county + ".csv", "r+")
     for line in csv_file:
