@@ -34,17 +34,19 @@ browser.get(URL)
 # headers = "jklafwjklafwjklawf, kjlafwjklafwjkl"
 # csv_file.write(headers + "\n")
 
-county = "Fluvanna"
+county = "Albemarle"
 
 source = browser.page_source
 soup = BeautifulSoup(source, 'html.parser')
 
 courts_list = browser.find_elements_by_css_selector("option")
 
-for court in range(len(courts_list)+1):
-    court_name = soup.findAll("option")[court].text.lstrip()
+match_dict = {}
 
-    set_court_by_index(1)
+for court in range(len(courts_list)+1):
+    court_name = soup.findAll("option")[court].text.strip()
+
+    set_court_by_index(court)
 
     csv_file = open(county + ".csv", "r+")
     for line in csv_file:
@@ -68,23 +70,26 @@ for court in range(len(courts_list)+1):
 
             # Gets rid of middle names
             case_name_split = case_defendant.split(", ")
-            case_name_shortened = case_name_split[0] + ", " + case_name_split[1].split()[0]
+            if len(case_name_split) > 1:
+                case_name_shortened = case_name_split[0] + ", " + case_name_split[1].split()[0]
+            else:
+                case_name_shortened = case_name_split[0]
 
             # Check if disposition date is after original
+            # Hear date is new list
             hear_date = case_id_cell.parent.findNext("td").findNext("td").findNext("td").text
-            hear_date_test = time.strptime(hear_date, "%m/%d/%Y")
-
+            if len(hear_date) > 0:
+                hear_date_test = time.strptime(hear_date, "%m/%d/%Y")
+            else:
+                continue
+            # Case date is from old list
             case_date = case_line[5]
-            print("Original case date: " + case_date)
-            print("New hearing date: " + hear_date)
-
             case_date_test = time.strptime(case_date, "%m/%d/%y")
 
             # If there's a match, proceed to make sure all other qualifiers match
-            # and hear_date_test > case_date_test
-            if case_name_shortened == doc_name_shortened and len(case_id_cell_link.text) > 0:
+            if case_name_shortened == doc_name_shortened and len(case_id_cell_link.text) > 0 and hear_date_test > case_date_test:
                 print(case_id_cell_link.text)
-                print("Match found")
+                print("Name match found")
                 case_id_cell_link.click()
 
                 # Check if guilty and not probation violation
@@ -106,15 +111,36 @@ for court in range(len(courts_list)+1):
                 charge = charge.split()[1:]
                 charge = " ".join(charge)
 
-                if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty" and len(
-                        probation_time.split()) > 2 and charge != "PROBATION VIOLATION":
-                    print(court_name + ", " + hear_date)
+                if len(disposition_code.split()) > 2 and disposition_code.split()[2] == "Guilty":
+                    match_value = court_name + "; " + hear_date
+                    print(match_value)
 
                     # Add the county name and hearing date to dictionary
+                    if doc_name_shortened not in match_dict:
+                        match_dict[doc_name_shortened] = [match_value]
+                    elif match_value not in match_dict[doc_name_shortened]:
+                        match_dict[doc_name_shortened].append(match_value)
 
-                quit()
+                    print(match_dict)
+                else:
+                    print("Not 'GUILTY'.")
 
+                browser.find_element_by_xpath("//input[@value='  Name List ']").click()
 
         browser.find_element_by_xpath("//input[@value='Main Menu']").click()
 
     browser.find_element_by_xpath("//input[@value='Change Court']").click()
+
+csv_file.close()
+
+print("SAVING OUTPUT...")
+output_file = open(county + "_output.csv", "w")
+for item in match_dict:
+    line = []
+    line.append(item)
+    for record in match_dict[item]:
+        line.append(record)
+    print(line)
+    data = ",".join(line)
+    output_file.write(data + "\n")
+output_file.close()
